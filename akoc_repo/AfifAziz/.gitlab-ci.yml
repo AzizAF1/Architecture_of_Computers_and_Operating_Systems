@@ -1,0 +1,26 @@
+variables:
+  GIT_DEPTH: 10
+  GIT_STRATEGY: clone
+  DOCKER_TLS_CERTDIR: "/certs"
+  TERM: xterm
+  FORCE_COLOR: "1"
+  GRADER_IMAGE: docker.gitlab.carzil.ru/mipt-os-basic/private/grader
+
+grade:
+  image: $GRADER_IMAGE:latest
+  rules:
+    - if: $CI_PROJECT_NAME =~ /^public-\d\d\d\d-(autumn|spring)/
+      when: never
+    - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /contributing/ || $CI_COMMIT_BRANCH =~ /contributing/
+      when: never
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      when: manual
+    - when: on_success
+  script:
+    - cd /opt/mipt-os-basic/
+    - python3 -m checker grade
+  timeout: 10 minutes
